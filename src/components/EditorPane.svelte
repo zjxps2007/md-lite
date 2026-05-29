@@ -142,13 +142,16 @@
           fontFamily: "var(--font-mono)",
           caretColor: "var(--accent)",
         },
+        ".cm-cursor, .cm-dropCursor": {
+          borderLeftColor: "var(--ink) !important",
+        },
         ".cm-scroller": {
           fontFamily: "var(--font-mono)",
         },
         ".cm-gutters": {
           background: "var(--panel)",
-          color: "var(--muted)",
-          borderRight: "1px solid var(--line)",
+          color: "var(--ink-muted)",
+          borderRight: "1px solid var(--border)",
         },
         ".cm-activeLineGutter": {
           background: "var(--accent-soft)",
@@ -158,34 +161,45 @@
           background: "var(--selection) !important",
         },
         ".cm-tooltip": {
-          border: "1px solid var(--line)",
-          borderRadius: "14px",
+          background: "var(--surface-strong)",
+          color: "var(--ink)",
+          border: "1px solid var(--border)",
+          borderRadius: "12px",
           boxShadow: "var(--shadow-lg)",
           overflow: "hidden",
         },
         ".cm-tooltip-autocomplete > ul": {
           fontFamily: "var(--font-sans)",
           maxHeight: "280px",
+          background: "var(--surface-strong)",
+          color: "var(--ink)",
+        },
+        ".cm-tooltip-autocomplete ul li": {
+          padding: "6px 12px",
+          color: "var(--ink)",
         },
         ".cm-tooltip-autocomplete ul li[aria-selected]": {
-          background: "var(--accent)",
-          color: "white",
+          background: "var(--accent) !important",
+          color: "white !important",
         },
         ".cm-search": {
           background: "var(--surface)",
-          borderTop: "1px solid var(--line)",
+          borderTop: "1px solid var(--border)",
           padding: "10px",
         },
         ".cm-search input": {
-          border: "1px solid var(--line)",
+          border: "1px solid var(--border)",
           borderRadius: "10px",
           padding: "6px 8px",
+          background: "var(--surface-strong)",
+          color: "var(--ink)",
         },
         ".cm-search button": {
-          border: "1px solid var(--line)",
+          border: "1px solid var(--border)",
           borderRadius: "10px",
           background: "var(--panel)",
           padding: "6px 10px",
+          color: "var(--ink)",
         },
       }),
     ];
