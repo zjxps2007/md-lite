@@ -22,6 +22,7 @@ export const lightweight = true;
 
 export const DEFAULT_SETTINGS: AppSettings = {
   theme: "system",
+  language: "en",
   fontFamily: "Atkinson Hyperlegible",
   fontSize: 15,
   tabSize: 2,

@@ -7,6 +7,7 @@ const viewModeSchema = z.enum(["editor", "preview", "split"]);
 
 export const appSettingsSchema = z.object({
   theme: z.enum(["system", "light", "dark"]),
+  language: z.enum(["ko", "en"]),
   fontFamily: z.string().min(1),
   fontSize: z.number().min(11).max(24),
   tabSize: z.number().int().min(2).max(8),

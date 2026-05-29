@@ -13,6 +13,7 @@
     upsertRecentFile,
   } from "$lib/stores/documentStore";
   import { mergeSettings, settingsStore } from "$lib/stores/settingsStore";
+  import { getTranslator } from "$lib/services/i18n";
   import {
     isTauriRuntime,
     loadSettingsFromBackend,
@@ -37,9 +38,11 @@
   let statusTimer: ReturnType<typeof setTimeout> | null = null;
   let manualPreviewContent = "";
   let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+  let sidebarCollapsed = false;
 
   $: state = $editorState;
   $: settings = $settingsStore;
+  $: t = getTranslator(settings.language);
   $: activeDoc = getActiveDocument(state);
   $: headings = extractHeadings(activeDoc?.content ?? "");
   $: stats = computeTextStats(activeDoc?.content ?? "");
@@ -265,6 +268,10 @@
     }
   }
 
+  function toggleSidebar() {
+    sidebarCollapsed = !sidebarCollapsed;
+  }
+
   onMount(() => {
     void initialize();
 
@@ -288,50 +295,69 @@
   <div class="main-layout">
     
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" class:sidebar-collapsed={sidebarCollapsed}>
+      <!-- macOS drag region -->
+      <div class="drag-region" data-tauri-drag-region></div>
+
       <div class="brand-container">
         <div class="brand-glyph">M</div>
         <div class="brand-text">
           <span class="brand-title">MdLite</span>
           <span class="brand-subtitle">Markdown Studio</span>
         </div>
+        <button
+          type="button"
+          class="sidebar-toggle-btn"
+          onclick={toggleSidebar}
+          title={sidebarCollapsed ? t("expandSidebar") : t("collapseSidebar")}
+          aria-label={sidebarCollapsed ? t("expandSidebar") : t("collapseSidebar")}
+          aria-expanded={!sidebarCollapsed}
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            {#if sidebarCollapsed}
+              <polyline points="9 18 15 12 9 6"></polyline>
+            {:else}
+              <polyline points="15 18 9 12 15 6"></polyline>
+            {/if}
+          </svg>
+        </button>
       </div>
       
       <div class="sidebar-section">
-        <div class="section-header">Actions</div>
+        <div class="section-header">{t("actions")}</div>
         <div class="actions-grid">
-          <button type="button" class="action-btn" onclick={handleNew} title="New Document">
+          <button type="button" class="action-btn" onclick={handleNew} title={t("newDocument")}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
               <line x1="12" y1="18" x2="12" y2="12"></line>
               <line x1="9" y1="15" x2="15" y2="15"></line>
             </svg>
-            <span>New</span>
+            <span>{t("actionNew")}</span>
           </button>
           
-          <button type="button" class="action-btn" onclick={() => handleOpen()} disabled={!desktopReady} title="Open Document">
+          <button type="button" class="action-btn" onclick={() => handleOpen()} disabled={!desktopReady} title={t("openFile")}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
             </svg>
-            <span>Open</span>
+            <span>{t("actionOpen")}</span>
           </button>
           
-          <button type="button" class="action-btn" onclick={handleSave} disabled={!activeDoc} title="Save Document">
+          <button type="button" class="action-btn" onclick={handleSave} disabled={!activeDoc} title={t("saveFile")}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
               <polyline points="17 21 17 13 7 13 7 21"></polyline>
               <polyline points="7 3 7 8 15 8"></polyline>
             </svg>
-            <span>Save</span>
+            <span>{t("actionSave")}</span>
           </button>
           
-          <button type="button" class="action-btn" onclick={handleSaveAs} disabled={!activeDoc || !desktopReady} title="Save Document As">
+          <button type="button" class="action-btn" onclick={handleSaveAs} disabled={!activeDoc || !desktopReady} title={t("saveFileAs")}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
               <circle cx="12" cy="13" r="4"></circle>
             </svg>
-            <span>Save As</span>
+            <span>{t("actionSaveAs")}</span>
           </button>
         </div>
         
@@ -339,13 +365,13 @@
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <span>Find in Document</span>
+          <span>{t("findInDoc")}</span>
         </button>
       </div>
 
       {#if $recentFilesStore.length > 0}
         <div class="sidebar-section">
-          <div class="section-header">Recent Files</div>
+          <div class="section-header">{t("recentFiles")}</div>
           <div class="recent-list">
             {#each $recentFilesStore.slice(0, 5) as file}
               <button type="button" class="recent-item" onclick={() => handleOpen(file.path)} title={file.path}>
@@ -361,10 +387,10 @@
       {/if}
 
       <div class="sidebar-section outline-section">
-        <div class="section-header">Outline</div>
+        <div class="section-header">{t("toc")}</div>
         <div class="outline-list">
           {#if headings.length === 0}
-            <span class="empty-message">No headings in document</span>
+            <span class="empty-message">{t("noHeadings")}</span>
           {:else}
             {#each headings as heading}
               <button
@@ -386,7 +412,7 @@
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
-          <span>Preferences</span>
+          <span>{t("preferences")}</span>
         </button>
       </div>
     </aside>
@@ -440,7 +466,11 @@
             class:active={state.viewMode === "editor"}
             onclick={() => handleViewMode("editor")}
           >
-            Editor
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            <span>{t("viewEditor")}</span>
           </button>
           <button
             type="button"
@@ -448,7 +478,11 @@
             class:active={state.viewMode === "split"}
             onclick={() => handleViewMode("split")}
           >
-            Split
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="12" y1="3" x2="12" y2="21"></line>
+            </svg>
+            <span>{t("viewSplit")}</span>
           </button>
           <button
             type="button"
@@ -456,7 +490,11 @@
             class:active={state.viewMode === "preview"}
             onclick={() => handleViewMode("preview")}
           >
-            Preview
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span>{t("viewPreview")}</span>
           </button>
         </div>
       </div>
@@ -470,13 +508,28 @@
       >
         {#if largeFileMode && state.viewMode !== "editor"}
           <div class="large-file-banner">
-            <span>Large file mode: preview updates only when requested.</span>
-            <button type="button" onclick={() => (manualPreviewContent = activeDoc?.content ?? "")}>Refresh preview</button>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <span>{t("largeFileWarning")}</span>
+            <button type="button" onclick={() => (manualPreviewContent = activeDoc?.content ?? "")}>{t("refreshPreview")}</button>
           </div>
         {/if}
 
         {#if state.viewMode !== "preview" && activeDoc}
-          <div class="pane-wrapper">
+          <div class="pane-wrapper editor-pane-wrapper">
+            <div class="pane-header">
+              <span class="pane-header-label">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"></polyline>
+                  <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+                {t("viewEditor")}
+              </span>
+              <span class="pane-header-info">{activeDoc.fileName}</span>
+            </div>
             <EditorPane
               bind:this={editorRef}
               content={activeDoc.content}
@@ -494,8 +547,30 @@
           </div>
         {/if}
 
+        {#if state.viewMode === "split"}
+          <div class="pane-divider"></div>
+        {/if}
+
         {#if state.viewMode !== "editor" && activeDoc}
-          <div class="pane-wrapper">
+          <div class="pane-wrapper preview-pane-wrapper">
+            <div class="pane-header">
+              <span class="pane-header-label">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                {t("viewPreview")}
+              </span>
+              {#if largeFileMode}
+                <button type="button" class="pane-header-action" onclick={() => (manualPreviewContent = activeDoc?.content ?? "")}>
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                  </svg>
+                  {t("refresh")}
+                </button>
+              {/if}
+            </div>
             <PreviewPane
               content={largeFileMode ? manualPreviewContent : activeDoc.content}
               filePath={activeDoc.path}

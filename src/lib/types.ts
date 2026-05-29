@@ -62,8 +62,11 @@ export interface AutocompleteSettings {
   acceptWithTab: boolean;
 }
 
+export type AppLanguage = "ko" | "en";
+
 export interface AppSettings {
   theme: ThemePreference;
+  language: AppLanguage;
   fontFamily: string;
   fontSize: number;
   tabSize: number;
