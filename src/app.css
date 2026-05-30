@@ -51,6 +51,7 @@
   --radius-lg: 20px;
   --radius-md: 12px;
   --radius-sm: 8px;
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
 }
 
 :root[data-theme="dark"] {
@@ -84,6 +85,7 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.45);
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -546,7 +548,6 @@ button:focus-visible {
 .outline-item:hover {
   background: var(--panel);
   color: var(--ink);
-  padding-left: 14px;
 }
 
 .outline-item.active {
@@ -839,6 +840,13 @@ button:focus-visible {
   flex-direction: column;
   overflow: hidden;
   animation: fade-in-up 0.3s ease-out;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow-md);
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
+  position: relative;
 }
 
 /* Pane header bar */
@@ -856,27 +864,23 @@ button:focus-visible {
   color: var(--ink-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   user-select: none;
+  position: relative;
+  z-index: 1;
 }
 
 .editor-pane,
 .preview-pane {
   flex-grow: 1;
   height: 100%;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-md) var(--radius-md);
-  background: var(--surface-strong);
-  box-shadow: var(--shadow-md);
+  background: transparent;
   overflow: hidden;
-  transition: border-color var(--transition-fast),
-              box-shadow var(--transition-fast);
   position: relative;
+  z-index: 1;
 }
 
 /* Noise texture on panes */
-.editor-pane::after,
-.preview-pane::after {
+.pane-wrapper::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -894,7 +898,7 @@ button:focus-visible {
   z-index: 1;
 }
 
-.editor-pane:focus-within {
+.editor-pane-wrapper:focus-within {
   border-color: var(--border-focus);
   box-shadow: var(--shadow-lg),
               0 0 0 3px var(--accent-soft),
@@ -1265,7 +1269,28 @@ button:focus-visible {
   padding: 10px 14px;
   font-size: 0.9rem;
   font-weight: 500;
+  color: var(--ink);
   transition: all var(--transition-fast);
+}
+
+.settings-grid select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: var(--select-chevron);
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+@media (forced-colors: active) {
+  .settings-grid select {
+    appearance: auto;
+    -webkit-appearance: auto;
+    background-image: none;
+    padding-right: 14px;
+  }
 }
 
 .settings-grid select:hover,
@@ -1276,7 +1301,7 @@ button:focus-visible {
 .settings-grid select:focus,
 .settings-grid input:focus {
   border-color: var(--accent);
-  background: var(--surface-strong);
+  background-color: var(--surface-strong);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
@@ -1299,7 +1324,7 @@ button:focus-visible {
   font-weight: 750;
 }
 
-.settings-section label {
+.settings-section label:not(.toggle-label) {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1311,11 +1336,11 @@ button:focus-visible {
   transition: color var(--transition-fast);
 }
 
-.settings-section label:hover {
+.settings-section label:not(.toggle-label):hover {
   color: var(--ink);
 }
 
-.settings-section label:last-child {
+.settings-section label:not(.toggle-label):last-child {
   margin-bottom: 0;
 }
 
@@ -1664,24 +1689,30 @@ button:focus-visible {
   opacity: 0.8;
 }
 
-/* Toggle label in settings */
-.toggle-label {
+.settings-section .toggle-label {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  flex-direction: row-reverse;
   font-size: 0.88rem;
-  font-weight: 500;
+  font-weight: 550;
+  color: var(--ink-muted);
   margin-bottom: 10px;
   cursor: pointer;
-  padding: 6px 0;
-  transition: color var(--transition-fast);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  transition: all var(--transition-fast);
 }
 
-.toggle-label:hover {
+.settings-section .toggle-label:hover {
   color: var(--ink);
+  background: var(--surface-hover);
+  border-color: var(--border-focus);
 }
 
-.toggle-label:last-child {
+.settings-section .toggle-label:last-child {
   margin-bottom: 0;
 }
 
