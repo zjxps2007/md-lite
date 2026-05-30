@@ -3,6 +3,7 @@
   import { DEFAULT_SETTINGS } from "$lib/defaults";
   import type { AppSettings } from "$lib/types";
   import { getTranslator } from "$lib/services/i18n";
+  import { fade, scale } from "svelte/transition";
 
   export let open = false;
   export let settings: AppSettings = DEFAULT_SETTINGS;
@@ -13,6 +14,7 @@
   }>();
 
   let draft: AppSettings = cloneSettings(settings);
+  let isTransitioningOut = false;
 
   function cloneSettings(value: AppSettings): AppSettings {
     return JSON.parse(JSON.stringify(value)) as AppSettings;
@@ -20,6 +22,7 @@
 
   $: if (open) {
     draft = cloneSettings(settings);
+    isTransitioningOut = false;
   }
 
   $: t = getTranslator(draft.language);
@@ -31,9 +34,20 @@
 </script>
 
 {#if open}
-  <div class="dialog-backdrop" role="presentation">
+  <div
+    class="dialog-backdrop"
+    class:outro={isTransitioningOut}
+    transition:fade={{ duration: 150 }}
+    onoutrostart={() => (isTransitioningOut = true)}
+    role="presentation"
+  >
     <button type="button" class="dialog-scrim" aria-label="Close settings" onclick={() => dispatch("close")}></button>
-    <form class="settings-dialog" aria-label="MdLite settings" onsubmit={submit}>
+    <form
+      class="settings-dialog"
+      transition:scale={{ duration: 200, start: 0.96 }}
+      aria-label="MdLite settings"
+      onsubmit={submit}
+    >
       <header>
         <div>
           <p class="eyebrow">{t("preferences")}</p>
